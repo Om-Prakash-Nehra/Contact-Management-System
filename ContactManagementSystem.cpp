@@ -2,15 +2,13 @@
 #include <string>
 using namespace std;
 
-struct Contact {
-    string name;
-    string mobile;
-    Contact* next;
-};
+const int MAX_CONTACTS = 100;
 
 class Contacts {
 private:
-    Contact* head;
+    string names[MAX_CONTACTS];
+    string mobiles[MAX_CONTACTS];
+    int contactCount;
 
     bool isValidNumber(const string& number) {
         if (number.length() != 10 || number[0] == '0') {
@@ -23,39 +21,42 @@ private:
     }
 
 public:
-    Contacts() : head(nullptr) {}
+    Contacts() : contactCount(0) {}
 
     void addContact(const string& name, const string& mobile) {
+        if (contactCount >= MAX_CONTACTS) {
+            cout << "Contact list is full." << endl;
+            return;
+        }
         if (!isValidNumber(mobile)) {
             cout << "Invalid mobile number. Must be 10 digits and not start with 0." << endl;
             return;
         }
-        Contact* newContact = new Contact{name, mobile, head};
-        head = newContact;
+        names[contactCount] = name;
+        mobiles[contactCount] = mobile;
+        contactCount++;
         cout << "Contact added successfully." << endl;
     }
 
     void deleteContact(const string& name) {
-        Contact* current = head;
-        Contact* previous = nullptr;
-
-        while (current != nullptr && current->name != name) {
-            previous = current;
-            current = current->next;
+        int index = -1;
+        for (int i = 0; i < contactCount; i++) {
+            if (names[i] == name) {
+                index = i;
+                break;
+            }
         }
 
-        if (current == nullptr) {
+        if (index == -1) {
             cout << "Contact not found." << endl;
             return;
         }
 
-        if (previous == nullptr) {
-            head = current->next;
-        } else {
-            previous->next = current->next;
+        for (int i = index; i < contactCount - 1; i++) {
+            names[i] = names[i + 1];
+            mobiles[i] = mobiles[i + 1];
         }
-
-        delete current;
+        contactCount--;
         cout << "Contact deleted successfully." << endl;
     }
 
@@ -65,37 +66,30 @@ public:
             return;
         }
 
-        Contact* current = head;
-        while (current != nullptr && current->name != name) {
-            current = current->next;
+        int index = -1;
+        for (int i = 0; i < contactCount; i++) {
+            if (names[i] == name) {
+                index = i;
+                break;
+            }
         }
 
-        if (current == nullptr) {
+        if (index == -1) {
             cout << "Contact not found." << endl;
             return;
         }
 
-        current->mobile = newMobile;
+        mobiles[index] = newMobile;
         cout << "Contact edited successfully." << endl;
     }
 
     void displayContacts() {
-        Contact* current = head;
-        if (current == nullptr) {
+        if (contactCount == 0) {
             cout << "No contacts to display." << endl;
             return;
         }
-        while (current != nullptr) {
-            cout << "Name: " << current->name << ", Mobile: " << current->mobile << endl;
-            current = current->next;
-        }
-    }
-
-    ~Contacts() {
-        while (head != nullptr) {
-            Contact* temp = head;
-            head = head->next;
-            delete temp;
+        for (int i = 0; i < contactCount; i++) {
+            cout << "Name: " << names[i] << ", Mobile: " << mobiles[i] << endl;
         }
     }
 };
@@ -117,26 +111,29 @@ int main() {
         displayMenu();
         cout << "Enter your choice: ";
         cin >> choice;
+        cin.ignore();
 
         switch (choice) {
             case 1:
                 cout << "Enter name: ";
-                cin >> name;
+                getline(cin, name);
                 cout << "Enter mobile number: ";
                 cin >> mobile;
                 contacts.addContact(name, mobile);
+                cin.ignore();
                 break;
             case 2:
                 cout << "Enter name of contact to delete: ";
-                cin >> name;
+                getline(cin, name);
                 contacts.deleteContact(name);
                 break;
             case 3:
                 cout << "Enter name of contact to edit: ";
-                cin >> name;
+                getline(cin, name);
                 cout << "Enter new mobile number: ";
                 cin >> mobile;
                 contacts.editContact(name, mobile);
+                cin.ignore();
                 break;
             case 4:
                 contacts.displayContacts();
